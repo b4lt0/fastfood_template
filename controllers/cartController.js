@@ -1,5 +1,9 @@
 const Cart = require("../models/Cart");
 const Product = require("../models/Product");
+const Transaction = require("../models/Transaction");
+const User = require("../models/User");
+const mongoose = require("mongoose");
+//TODO completa ordine, notifica chef
 
 const populateCart = async () => {
     const carts = await Cart.find().populate({
@@ -16,33 +20,34 @@ const addItem = async (payload) => {
 const addItemToCart = async (req, res) => {
     const {productId, quantity} = req.body;
 
-    try {
+    try { // Populate the cart with the referred products
         let cart = await populateCart();
+        // Look for the Product we want to add and return error if missing
         let productDetails = await Product.findById(productId);
-        if (!productDetails) {
-            return res.status(404).json({'message': 'This product does not exist'});
-        }
-        //--If Cart Exists ----
+        if (!productDetails) return res.status(404).json({'message': 'This product does not exist'});
+
         if (cart) {
-            //---- check if index exists ----
+            // Get the index in the items array if the product is already in the cart, otherwise -1
             const indexFound = cart.items.findIndex(item => item.productId.id === productId);
-            //------this removes an item from the cart if the quantity is set to zero,We can use this method to remove an item from the list  -------
+            //If previous returns valid index and quantity was set to <=0 in req...
             if (indexFound !== -1 && quantity <= 0) {
+                //... we delete that product (as a deleteFromCart method)...
                 cart.items.splice(indexFound, 1);
+                //... and update subtotal.
                 if (cart.items.length === 0) {
                     cart.subTotal = 0;
                 } else {
                     cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
                 }
             }
-            //----------check if product exist,just add the previous quantity with the new quantity and update the total price-------
+            // If the index was valid and quantity was not meant to delete product (>0), we add it
             else if (indexFound !== -1) {
                 cart.items[indexFound].quantity = cart.items[indexFound].quantity + quantity;
                 cart.items[indexFound].total = cart.items[indexFound].quantity * productDetails.price;
                 cart.items[indexFound].price = productDetails.price
                 cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
             }
-            //----Check if Quantity is Greater than 0 then add item to items Array ----
+            // If the quantity was positive but the product wasn't in db then we push it into the json array
             else if (quantity > 0) {
                 cart.items.push({
                     productId: productId,
@@ -52,14 +57,15 @@ const addItemToCart = async (req, res) => {
                 })
                 cart.subTotal = cart.items.map(item => item.total).reduce((acc, next) => acc + next);
             }
-            //----if quantity or price is 0 throw the error -------
+            // This is if we didn't receive the correct values in req
             else {
                 return res.status(400).json({'message': "Invalid request"})
             }
+            // Save everything done so far
             let newCart = await cart.save();
             return res.status(201).json(newCart)
         }
-        //------------ if there is no user with a cart...it creates a new cart and then adds the item to the cart that has been created------------
+        // If there is no user with a cart it creates a new cart and then adds the item to the newly created cart
         else {
             const cartData = {
                 items: [{
@@ -70,35 +76,24 @@ const addItemToCart = async (req, res) => {
                 }],
                 subTotal: parseInt(productDetails.price * quantity)
             }
-            cart = await addItem(cartData)
-            // let data = await cart.save();
+            cart = await addItem(cartData);
             res.json(cart);
         }
     } catch (err) {
-        return res.status(500).json({'message': "Ooops something went wrong "+err.toString()});
+        return res.status(500).json({'message': "Ooops something went wrong: "+err.toString()});
     }
 }
+
 
 const getCart = async (req, res) => {
     try {
         let cart = await populateCart();
         if (!cart) {
-            return res.status(400).json({
-                type: "Invalid",
-                msg: "Cart Not Found",
-            })
+            return res.status(404).json({'message': "There's no cart here."})
         }
-        res.status(200).json({
-            status: true,
-            data: cart
-        })
+        res.status(200).json({cart})
     } catch (err) {
-        console.log(err)
-        res.status(400).json({
-            type: "Invalid",
-            msg: "Something Went Wrong",
-            err: err
-        })
+        res.status(500).json({'message': "Ooops something went wrong: "+err.toString()});
     }
 }
 

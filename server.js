@@ -55,6 +55,7 @@ app.use(verifyJWT);
 app.use('/users', require('./routes/api/users'));
 app.use('/products', require('./routes/api/products'));
 app.use('/cart', require('./routes/api/cart'));
+app.use('/transaction', require('./routes/api/transaction'));
 
 // default 404 route at the end of the routes cascade
 app.all('*', (req, res) => {
