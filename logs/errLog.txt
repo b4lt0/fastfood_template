@@ -1,0 +1,7 @@
+14/06/2022	12:08:18	53bf7582-2569-4df1-b7b5-341dc8219a9f	ReferenceError: path is not defined
+14/06/2022	19:21:07	2d73b688-c98d-47b6-93ac-06fbc42ef9c3	Error: Cannot set headers after they are sent to the client
+14/06/2022	19:32:48	52290f50-d538-42d0-a513-9fb47629d4e4	Error: Cannot set headers after they are sent to the client
+16/06/2022	09:35:54	ad988dfe-012c-49e0-b4e8-19a4cb200a74	Error: Cannot set headers after they are sent to the client
+16/06/2022	18:59:56	1b7fba47-74fa-44c3-af36-c59ebe1cff79	Error: Cannot set headers after they are sent to the client
+17/06/2022	08:30:27	4a144cbe-ea04-4461-a18f-a469e73ba398	TypeError: allowedRoles is not iterable
+17/06/2022	08:45:49	178996c9-2610-4eb4-9d2f-027443d5ec85	Error: Cannot set headers after they are sent to the client
