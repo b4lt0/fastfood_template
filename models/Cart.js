@@ -27,4 +27,5 @@ const cartSchema = new Schema({
         subTotal: Number
     },
     {timestamps: true})
+
 module.exports = mongoose.model('cart', cartSchema);

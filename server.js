@@ -27,7 +27,7 @@ app.use(logger);
 
 // allow cross origin requests
 //TODO add whitelist and cors options
-//TODO uncomment (postman)
+//TODO uncomment (need for testing with postman)
 //app.use(cors())
 
 //--------------------
@@ -56,6 +56,7 @@ app.use('/users', require('./routes/api/users'));
 app.use('/products', require('./routes/api/products'));
 app.use('/cart', require('./routes/api/cart'));
 app.use('/transaction', require('./routes/api/transaction'));
+app.use('/order', require('./routes/api/order'));
 
 // default 404 route at the end of the routes cascade
 app.all('*', (req, res) => {
