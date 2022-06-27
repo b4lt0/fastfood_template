@@ -6,3 +6,7 @@
 17/06/2022	08:30:27	4a144cbe-ea04-4461-a18f-a469e73ba398	TypeError: allowedRoles is not iterable
 17/06/2022	08:45:49	178996c9-2610-4eb4-9d2f-027443d5ec85	Error: Cannot set headers after they are sent to the client
 18/06/2022	20:10:25	70c7fe32-9c7d-4a65-a4f4-c2415d5fccd2	Error: Cannot set headers after they are sent to the client
+18/06/2022	23:00:34	63c83631-a932-4fb1-9e10-7dcdf70b51ea	Error: Cannot set headers after they are sent to the client
+20/06/2022	12:15:23	cd345b62-d132-4029-b4e2-57759f12eeff	Error: Cannot set headers after they are sent to the client
+26/06/2022	20:25:39	1fa84421-ed98-4f91-9dec-8858ddfff069	Error: Cannot set headers after they are sent to the client
+27/06/2022	11:33:33	b1b914cc-b34a-4be6-9bb0-63d37a9ea7a7	Error: Cannot set headers after they are sent to the client

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const registerController = require('../controllers/registerController');
 
-router.post('/', registerController.handleSignUp);
+router.route('/')
+    .post(registerController.handleSignUp);
 
 module.exports = router;

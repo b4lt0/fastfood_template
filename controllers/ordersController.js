@@ -3,22 +3,17 @@ const Cart = require("../models/Cart");
 const User = require("../models/User");
 const schedule = require('node-schedule');
 
-class Counter  {
-    static orderCounter = 0;
-
-    static get orderCounter() {
-        this.orderCounter++;
-        return this.orderCounter;
-    }
-
+/*
+ //to reset order counter at midnight
     static globalResetJob = schedule.scheduleJob('0 0 * * *', () => {
-        this.orderCounter = 0;
+        Counter.counter = 0;
     });
-}
+}*/
 
 const createOrder = async (req, res) => {
     const token = req.cookies.jwt;
     const {cartId} = req.body;
+    const orderLimit = 100;
     try {
         let cart = await Cart.findById(cartId);
         if (!cart) return res.status(404).json({'message': 'This cart does not exist'});
@@ -26,10 +21,15 @@ const createOrder = async (req, res) => {
         const foundUser = await User.findOne({refreshToken: token}).exec();
         if (!foundUser) return res.status(403).json({'message': 'Mhhhh I see no one here with your token, who are you?'});
 
+        const latestOrder = await Order.findOne().sort({number: -1}).exec();
+        let orderNumber = !latestOrder? 0 : latestOrder.number;
+        orderNumber++;
+        orderNumber = orderNumber>=orderLimit? 1 : orderNumber;
+
         const order = {
             customerId: foundUser.id,
             cartId: cart.id,
-            number: Counter.orderCounter()
+            number: orderNumber
         }
 
         const result = await Order.create(order);
@@ -53,7 +53,24 @@ const getWaitingOrdersQueue = async (req, res) => {
     res.json(orderQueue);
 }
 
-const sendNotification = () => {}
+const handleSSE = async (req, res) => {
+    const eventListener = require('./commonEventEmitter').commonEmitter;
+
+    //res.status(200);
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    eventListener.on('cooking', function (msg) {
+        res.write(`data: ${JSON.stringify(msg)}\n\n`);
+    });
+
+    eventListener.on('ready', function (msg) {
+        res.write(`data: ${JSON.stringify(msg)}\n\n`);
+        res.end();
+    });
+}
 
 const openOrderFromQueue = async (req, res) => {
     const token = req.cookies.jwt;
@@ -66,8 +83,6 @@ const openOrderFromQueue = async (req, res) => {
         if (!foundChef) return res.status(403).json({'message': 'Mhhhh I see no one here with your token, who are you?'});
 
         await Order.updateOne({_id: orderId}, {'chefId': foundChef.id, 'status': 'cooking'}).exec();
-
-        sendNotification();
 
         const populatedOrder = await Order.findById(orderId).populate({
             path: 'cartId',
@@ -99,8 +114,6 @@ const closeOrderFromQueue = async (req, res) => {
         await Order.updateOne({_id: orderId}, {'status': 'ready'}).exec();
         order = await Order.findById(orderId);
 
-        sendNotification();
-
         res.status(200).json(order);
 
         schedule.scheduleJob('0 0 * * *', async () => {
@@ -117,4 +130,5 @@ module.exports = {
     openOrderFromQueue,
     getOrdersQueue,
     createOrder,
+    handleSSE
 }

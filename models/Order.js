@@ -8,6 +8,7 @@
 */
 
 const mongoose = require('mongoose');
+const {commonEmitter} = require("../controllers/commonEventEmitter");
 const Schema = mongoose.Schema;
 
 const orderSchema = new Schema({
@@ -30,5 +31,15 @@ const orderSchema = new Schema({
     },
     number: Number
 }, {timestamps: true})
+
+// Post hook after update order status that emits corresponding event
+orderSchema.post('updateOne', function(doc, next) {
+    if(doc.status === 'cooking') {
+        commonEmitter.emit('cooking', 'We\'re working on your order');
+    }
+    else if (doc.status === 'ready') {
+        commonEmitter.emit('ready', 'Your order is READY!');
+    }
+});
 
 module.exports = mongoose.model('order', orderSchema);
